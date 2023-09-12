@@ -50,8 +50,8 @@ function Gameboard() {
         };
     };
 
-    let rows = 22; // rows @ index 0 & 1 will be hidden above the board 
-    let columns = 10;
+    let rows = 24; // rows @ index 0 & 1 will be hidden above the board then 2 & 23 will be the walls
+    let columns = 12; // columns @ index 0 & 11 will be walls
     let board = [];
 
     for (let i = 0; i < rows; i++) {
@@ -69,9 +69,8 @@ function Gameboard() {
 
     const allRowsFilled = board.filter(isRowFilled);
 
-    console.log(allRowsFilled);
 
-    function clearFilledRows(board) {
+    const clearFilledRows = (board) => {
         const filledRows = board.filter(isRowFilled);
         if (filledRows.length > 0) {
             for (const row of filledRows) {
@@ -91,6 +90,61 @@ function Gameboard() {
         isRowFilled,
         clearFilledRows
     };
-}
+};
+
+function TetrisPieces() {
+    const tetrominos = {
+        'I': [
+          [0,0,0,0],
+          [1,1,1,1],
+          [0,0,0,0],
+          [0,0,0,0]
+        ],
+        'J': [
+          [2,0,0],
+          [2,2,2],
+          [0,0,0],
+        ],
+        'L': [
+          [0,0,3],
+          [3,3,3],
+          [0,0,0],
+        ],
+        'O': [
+          [4,4],
+          [4,4],
+        ],
+        'S': [
+          [0,5,5],
+          [5,5,0],
+          [0,0,0],
+        ],
+        'Z': [
+          [6,6,0],
+          [0,6,6],
+          [0,0,0],
+        ],
+        'T': [
+          [0,7,0],
+          [7,7,7],
+          [0,0,0],
+        ]
+     };
+    
+    const colors = {
+        'I': 'cyan',
+        'O': 'yellow',
+        'T': 'purple',
+        'S': 'green',
+        'Z': 'red',
+        'J': 'blue',
+        'L': 'orange'
+     };
+
+    return {
+        tetrominos,
+        colors,
+    }
+};
 
 Gameboard()
