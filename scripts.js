@@ -1,96 +1,68 @@
 /*
-Gamebaord:
-- create board
-- clear rows & check they are filled
+# Function to create a game board
+function gameboard() {
+    Create an empty 2D array called "board"
+    Iterate over rows:
+        Create an empty array within "board"
+        Iterate over columns:
+            Set the element in the empty array to represent an empty cell
+    Return the game board
+}
 
-Pieces: 
-- line, J, L, cube, S, Z, T shapes and position
-- move left & right (not outside bounds)
-- rotate 90deg
-- fast fall (think about hard and soft drops)
-- land them at the bottom available space
+# Initialize the game board
+game = gameboard()
 
-GameController:
-- game start
-- pause / unpause game 
-- gameover 
-- select random piece to drop
-- update board and screen each time interval
-- take player inputs 
-- update score for lines cleared (100 points for 1 line, 800 for 'tetris', 1200 for b2b 'tetris')
-- increase fall rate based on lines cleared
+# Function to control the game screen
+function screenController() {
+    Get the canvas element and its 2D context
+    Get the score element
+    Function to draw a colored square on the canvas
+    Function to draw the game board on the canvas
+    Initialize variables for time tracking, game over status, etc.
+    Function to drop the tetromino
+    Return the canvas, context, score element, and other functions
+}
 
-ScreenController:
-- call the board from 'Gameboard' and render them onto page
-- have score counter update from 'GameController' 
-- show a game over screen
+# Initialize the game screen controller
+screen = screenController()
+Call the function to draw the initial game board on the screen
 
-InputHandler: 
-- add event listeners for user keyboard inputs
+# Class definition for a Tetromino piece
+class Piece {
+    Constructor to initialize the Tetromino piece with a letter
+    Initialize Tetromino-specific properties such as shape, color, etc.
+    Define methods to draw, undraw, move, rotate, check for collisions, and lock the piece
+}
+
+# Function to handle game logic
+function gameController() {
+    Define all possible Tetromino pieces with their shapes and colors
+    Function to generate a random Tetromino piece
+    Initialize variables for time tracking, game over status, etc.
+    Function to drop the current Tetromino piece
+    Generate an initial random Tetromino piece and start dropping it
+    Return the functions and the current Tetromino piece
+}
+
+# Initialize the game controller
+newGame = gameController()
+
+# Function to handle player input
+function InputHandler() {
+    Listen for keyboard events
+    Define controls for moving and rotating the Tetromino piece
+    Return the control functions
+}
+
+# Initialize the input handler
+playerControls = InputHandler()
+
 
 Plan:
 - make a code for a console version of the game
 - add a UI and print the console game onto the page
 - try to expand so that two people can play side by side (one with WASD and other other with arrow keys)
 */
-
-function Gameboard() {
-    const Cell = () => {
-        let value = 0;
-
-        const addShape = (shape) => {
-            value = shape;
-        };
-
-        const getValue = () => value;
-
-        return {
-            addShape,
-            getValue
-        };
-    };
-
-    let rows = 24; // rows @ index 0 & 1 will be hidden above the board then 2 & 23 will be the walls
-    let columns = 12; // columns @ index 0 & 11 will be walls
-    let board = [];
-
-    for (let i = 0; i < rows; i++) {
-        board[i] = [];
-        for (let j = 0; j < columns; j++) {
-            board[i].push(Cell());
-        }
-    }
-
-    console.log(board);
-
-    const initializeBoard = () => board;
-
-    const isRowFilled = (row) => !row.some(Cell => Cell.getValue() === 0);
-
-    const allRowsFilled = board.filter(isRowFilled);
-
-
-    const clearFilledRows = (board) => {
-        const filledRows = board.filter(isRowFilled);
-        if (filledRows.length > 0) {
-            for (const row of filledRows) {
-                const rowIndex = board.indexOf(row);
-                board.splice(rowIndex, 1);
-            }
-
-            const numRowsToAdd = filledRows.length;
-            for (let i = 0; i < numRowsToAdd; i++) {
-                board.unshift(Array(columns).fill(Cell()));
-            }
-        }
-    }
-
-    return {
-        initializeBoard,
-        isRowFilled,
-        clearFilledRows
-    };
-};
 
 const tetrominoNames = {
 'I': [
@@ -205,4 +177,33 @@ const tetrominoColors = {
 'L': 'orange'
 };
 
-Gameboard()
+const rows = 20;
+const columns = 10;
+const SQ = squareSize = 20;
+const emptyCell = 'white'; // color of an empty square
+
+let linesCleared = 0;
+let lastTetris = false;
+let score = 0;
+
+let p;
+
+function gameboard() {
+
+    let board = [];
+    for(let r = 0; r < rows; r++){
+        board[r] = [];
+        for(let c = 0; c < columns; c++){
+            board[r][c] = emptyCell;
+        }
+    };
+    
+    console.log(board);
+
+    return {
+        board,
+    };
+    };
+    
+
+const game = new gameboard();

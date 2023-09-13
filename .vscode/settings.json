@@ -1,5 +1,4 @@
 {
-  "cSpell.words": [
-    "Gameboard"
-  ]
+  "cSpell.words": ["Gameboard", "tetromino"],
+  "liveServer.settings.port": 5501
 }
