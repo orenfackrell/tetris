@@ -186,24 +186,72 @@ let linesCleared = 0;
 let lastTetris = false;
 let score = 0;
 
-let p;
+let activePiece;
 
 function gameboard() {
 
-    let board = [];
+    let board = [];  
     for(let r = 0; r < rows; r++){
         board[r] = [];
         for(let c = 0; c < columns; c++){
-            board[r][c] = emptyCell;
+            board[r][c] = emptyCell; // set the element in the empty array to represent an empty cell;
         }
     };
-    
-    console.log(board);
 
     return {
-        board,
-    };
-    };
+        board  // the board array will be accessible through 'game.board';
+        };
+    }
+
     
 
 const game = new gameboard();
+
+function screenController() {
+
+    const cvs = document.getElementById("canvas");
+    const ctx = cvs.getContext("2d");
+    const scoreElement = document.getElementById("score");
+    
+    function drawSquare(x, y, colour){
+        ctx.fillStyle = colour;
+        ctx.fillRect(x*SQ, y*SQ, SQ, SQ);
+    
+        ctx.strokeStyle = "black";
+        ctx.strokeRect(x*SQ, y*SQ, SQ, SQ);
+    }
+    
+    
+    function drawBoard(){
+        for(let r = 0; r < rows; r++){
+            for(let c = 0; c < columns; c++){
+                drawSquare(c, r, game.board[r][c]); //'game.board[r][c]' is accesses the colour stored in the cell of the gameboard
+            }
+        }
+    }
+    
+    let dropStart = Date.now();
+    let gameOver = false;
+    function drop() {
+        let now = Date.now();
+        let timeDiff = now - dropStart;
+        if(timeDiff > 1000){
+            activePiece.moveDown();
+            dropStart = Date.now();
+        }
+        if( !gameOver){
+            requestAnimationFrame(drop);    // for as long as the game isn't over the animation to drop the piece a row is called
+        }
+    };
+    
+    return {
+        scoreElement,
+        drawSquare,
+        drawBoard,
+        drop
+    }
+    };
+    
+    const screen = screenController();
+    screen.drawBoard();
+
