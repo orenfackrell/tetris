@@ -458,4 +458,76 @@ class Piece {
         return this.y === -2;
     };
     }
+};
+
+function gameController() {
+
+    const allPieces = {
+        I : [tetrominoNames.I, tetrominoColors.I],
+        J : [tetrominoNames.J, tetrominoColors.J],
+        L : [tetrominoNames.L, tetrominoColors.L],
+        O : [tetrominoNames.O, tetrominoColors.O],
+        S : [tetrominoNames.S, tetrominoColors.S],
+        Z : [tetrominoNames.Z, tetrominoColors.Z],
+        T : [tetrominoNames.T, tetrominoColors.T]
     };
+    
+    let keys = Object.keys(allPieces)
+    
+    function randomPiece(){
+        let r = Math.floor(Math.random() * keys.length) // 0 -> 6
+        return new Piece(keys[r]);
+    }
+    
+    let dropStart = Date.now();
+    let gameOver = false;
+    function drop(){
+        let now = Date.now();
+        let delta = now - dropStart;
+        if(delta > 650){
+            activePiece.moveDown();
+            dropStart = Date.now();
+        }
+        if( !gameOver){
+            requestAnimationFrame(drop);
+        }
+    }
+    
+    activePiece = randomPiece();
+    drop();
+    
+    return {
+        randomPiece,
+        activePiece
+    }
+}
+    
+const newGame = gameController();
+
+function InputHandler() {
+    document.addEventListener("keydown", controls);
+
+    function controls(event) {
+        
+        if (event.keyCode == 37) {
+            activePiece.moveLeft();
+            dropStart = Date.now();
+        } else if (event.keyCode == 38) {
+            activePiece.rotate();
+            dropStart = Date.now();
+        } else if (event.keyCode == 39) {
+            activePiece.moveRight();
+            dropStart = Date.now();
+        } else if (event.keyCode == 40) {
+            activePiece.moveDown();
+            dropStart = Date.now();
+        }
+    }
+
+    return {
+        controls,
+    };
+}
+
+
+const playerControls = InputHandler();
