@@ -250,8 +250,212 @@ function screenController() {
         drawBoard,
         drop
     }
-    };
+};
     
-    const screen = screenController();
-    screen.drawBoard();
+const screen = screenController();
+screen.drawBoard();
 
+class Piece {
+    constructor(letter) {
+        this.letter = letter
+        this.tetromino = tetrominoNames[`${this.letter}`]; // name from tetromino array
+        this.colour = tetrominoColors[`${this.letter}`]; // colour from tetromino array
+        this.emptyCell = emptyCell
+    
+        
+    
+        this.rotation = 0; // first instance of the tetromino [0]
+        this.tetrominoOrientation = tetrominoNames[`${this.letter}`][this.rotation];
+    
+        this.x = 3; // spawns tetromino in 4th column
+        this.y = -this.tetrominoOrientation.length; // spawns it up over the board
+    
+        this.length = this.tetrominoOrientation.length
+        
+        this.fill = function (colour) {
+            for (let r = 0; r < this.tetrominoOrientation.length; r++) {
+                for (let c = 0; c < this.tetrominoOrientation.length; c++) {
+                    // we draw only occupied squares
+                    if (this.tetrominoOrientation[r][c]) {
+                        screen.drawSquare(this.x + c, this.y + r, colour);
+                    }
+                }
+            }
+        };
+    
+        this.draw = function() {
+            for (let r = 0; r < this.tetrominoOrientation.length; r++) {
+                for (let c = 0; c < this.tetrominoOrientation[r].length; c++) { // Use the length of the current row
+                    // we draw only occupied squares
+                    if (this.tetrominoOrientation[r][c]) {
+                        screen.drawSquare(this.x + c, this.y + r, this.colour);
+                    }
+                }
+            }
+        };
+    
+        this.unDraw = function() {
+            this.fill(emptyCell);
+        };
+    
+        this.moveDown = function(){
+            if(!this.collision(0,1,this.tetrominoOrientation)){
+                this.unDraw();
+                this.y++;
+                this.draw();
+            }else{
+                // we lock the piece and generate a new one
+                this.lock();
+                activePiece = newGame.randomPiece(); // Generate a new piece here
+            }
+        };
+            
+        this.moveRight = function() {
+            if(!this.collision(1,0,this.tetrominoOrientation)){
+                this.unDraw();
+                this.x++;
+                this.draw();
+            }
+        };
+    
+        this.moveLeft = function() {
+            if(!this.collision(-1,0,this.tetrominoOrientation)){
+                this.unDraw();
+                this.x--;
+                this.draw();
+            }
+        };
+    
+        this.rotate = function(){
+            let nextPattern = this.tetromino[(this.rotation + 1)%this.tetromino.length];
+            let kick = 0;
+            
+            if(nextPattern){ // Check if the next rotation exists
+                if(this.collision(0, 0, nextPattern)){
+                    if(this.x > columns/2){
+                        // it's the right wall
+                        kick = -1; // we need to move the piece to the left
+                    }else{
+                        // it's the left wall
+                        kick = 1; // we need to move the piece to the right
+                    }
+                }
+                
+                if(!this.collision(kick, 0, nextPattern)){
+                    this.unDraw();
+                    this.x += kick;
+                    this.rotation = (this.rotation + 1)%this.tetromino.length; // (0+1)%4 => 1
+                    this.tetrominoOrientation = this.tetromino[this.rotation];
+                    this.draw();
+                }
+            }
+        }
+    
+        this.collision = function(x,y,piece){
+            for(let r = 0; r < piece.length; r++){
+                for(let c = 0; c < piece.length; c++){
+                    // if the square is empty, we skip it
+                    if(!piece[r][c]){
+                        continue;
+                    }
+                    // coordinates of the piece after movement
+                    let newX = this.x + c + x;
+                    let newY = this.y + r + y;
+                    
+                    // conditions
+                    if(newX < 0 || newX >= columns || newY >= rows){
+                        return true;
+                    }
+                    // skip newY < 0; board[-1] will crush our game
+                    if(newY < 0){
+                        continue;
+                    }
+                    // check if there is a locked piece already in place
+                    if(game.board[newY][newX] != emptyCell){
+                        return true;
+                    }
+                }
+            }
+            return false;
+        };
+    
+        function removeRow(r) {
+            // remove the row r
+            game.board.splice(r, 1);
+        
+            // add vacant row at the top
+            game.board.unshift(Array(columns).fill(emptyCell));
+        }
+    
+        this.lock = function(){
+            for(let r = 0; r < this.tetrominoOrientation.length; r++){
+                for(let c = 0; c < this.tetrominoOrientation.length; c++){
+                    // we skip the vacant squares
+                    if( !this.tetrominoOrientation[r][c]){
+                        continue;
+                    }
+                    // pieces to lock on top = game over
+                    if(this.y + r < 0){
+                        alert("Game Over");
+                        // stop request animation frame
+                        gameOver = true;
+                        break;
+                    }
+                    //lock the piece
+                    game.board[this.y+r][this.x+c] = this.colour;
+                }
+            }
+            // remove full rows
+            let linesClearedThisTurn = 0;
+            for(let r = 0; r < rows; r++){
+                let isRowFull = true;
+                for(let c = 0; c < columns; c++){
+                    isRowFull = isRowFull && (game.board[r][c] != emptyCell);
+                }
+                if(isRowFull){
+                    // if the row is full, we remove it
+                    removeRow(r);
+                    linesClearedThisTurn++;
+                }
+            }
+        
+            // update score
+            if(linesClearedThisTurn === 4){
+                if(lastTetris){
+                    score += 1200;
+                }else{
+                    score += 800;
+                    lastTetris = true;
+                }
+            }else{
+                score += linesClearedThisTurn * 100;
+                lastTetris = false;
+            }
+        
+            // update the board
+            screen.drawBoard();
+        
+            // update the score
+            screen.scoreElement.textContent = score;
+        
+            // generate a new piece and draw it
+            activePiece = newGame.randomPiece();
+            activePiece.draw();
+        }
+        
+        this.generateNewRandomPiece = function () {
+            this.letter = getRandomPieceType();
+            this.tetromino = tetrominoNames[this.letter];
+            this.colour = tetrominoColors[this.letter];
+            this.rotation = 0;
+            this.tetrominoOrientation = this.tetromino[this.rotation];
+            this.x = 3;
+            this.y = -2;
+            this.length = this.tetrominoOrientation.length;
+        };
+        
+        this.isAtTop = function () {
+        return this.y === -2;
+    };
+    }
+    };
